@@ -1,3 +1,4 @@
+import re
 from typing import Tuple
 
 from flask import Flask, jsonify, request, Response
@@ -51,9 +52,22 @@ def mirror(name):
     data = {"name": name}
     return create_response(data)
 
+
+
 @app.route("/shows", methods=['GET'])
 def get_all_shows():
-    return create_response({"shows": db.get('shows')})
+    minEpisodes = request.args.get('minEpisodes')
+    if(minEpisodes == "" or minEpisodes == None):
+        return create_response({"shows": db.get('shows')})
+    else:
+        showList = []
+        shows = db.get('shows')
+        for show in shows:
+            if int(show.get('episodes_seen')) >= int(minEpisodes):
+                showList.append(show)
+        return create_response({"shows": showList})
+
+
 
 @app.route("/shows/<id>", methods=['DELETE'])
 def delete_show(id):
@@ -64,6 +78,65 @@ def delete_show(id):
 
 
 # TODO: Implement the rest of the API here!
+
+
+@app.route("/shows/<id>", methods=['GET'])
+def get_show(id):
+    if db.getById('shows', int(id)) is None:
+        return create_response(status=404, message="No show with this id exists")
+    return create_response({"show": db.getById('shows', int(id))})
+
+
+
+
+
+
+@app.route("/shows", methods=['POST'])
+def add_show():
+
+    print(request.json)
+    show_name = request.json['name']
+    show_episodes = request.json['episodes_seen']
+
+    if(show_name == None or show_name == ""):
+        return create_response(status=422, message="The show name cannot be empty!")
+    if(show_episodes == None or show_episodes == ""):
+        return create_response(status=422, message="The episodes seen cannot be empty!")
+
+    this_show = {'name':show_name, 'episodes_seen': show_episodes}
+    db.create('shows', this_show)
+
+    id = db.getLastId('shows')
+    return create_response({"show": db.getById('shows', int(id))})
+
+
+
+
+
+
+@app.route("/shows/<id>", methods=['PUT'])
+def update_show(id):
+
+    if db.getById('shows', int(id)) is None:
+        return create_response(status=404, message="No show with this id exists")
+
+    print(request.json)
+    show_name = request.json['name']
+    show_episodes = request.json['episodes_seen']
+    this_show = db.getById('shows', int(id))
+
+    if(show_name == None or show_name == ""):
+        show_name = this_show.get('name')
+    if(show_episodes == None or show_episodes == ""):
+        show_episodes = this_show.get('episodes_seen')
+
+    update_values = {'name':show_name, 'episodes_seen': show_episodes}
+    db.updateById('shows', int(id), update_values)
+
+    return create_response({"show": db.getById('shows', int(id))})
+
+
+
 
 """
 ~~~~~~~~~~~~ END API ~~~~~~~~~~~~

@@ -32,3 +32,8 @@ def updateById(type, id, update_values):
 
 def deleteById(type, id):
     db_state[type] = [i for i in get(type) if i["id"] != id]
+
+
+def getLastId(type):
+    last_id = max([i["id"] for i in get(type)])
+    return last_id
