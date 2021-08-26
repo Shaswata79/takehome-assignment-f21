@@ -58,14 +58,16 @@ def mirror(name):
 def get_all_shows():
     minEpisodes = request.args.get('minEpisodes')
     if(minEpisodes == "" or minEpisodes == None):
-        return create_response({"shows": db.get('shows')})
+        return create_response(data={"shows": db.get('shows')}, message="Retrieved all shows")
     else:
         showList = []
         shows = db.get('shows')
         for show in shows:
             if int(show.get('episodes_seen')) >= int(minEpisodes):
                 showList.append(show)
-        return create_response({"shows": showList})
+        if len(showList) == 0:
+            return create_response(data={"shows": showList}, message="There are no shows with a minimun of " + minEpisodes + " episodes seen.")
+        return create_response(data={"shows": showList}, message="Retrieved all shows with " + minEpisodes + " or more episodes seen.")
 
 
 
@@ -84,8 +86,7 @@ def delete_show(id):
 def get_show(id):
     if db.getById('shows', int(id)) is None:
         return create_response(status=404, message="No show with this id exists")
-    return create_response({"show": db.getById('shows', int(id))})
-
+    return create_response(data={"show": db.getById('shows', int(id))}, message="Retrieved the show with id " + str(id))
 
 
 
@@ -93,10 +94,14 @@ def get_show(id):
 
 @app.route("/shows", methods=['POST'])
 def add_show():
-
-    print(request.json)
-    show_name = request.json['name']
-    show_episodes = request.json['episodes_seen']
+    try:
+        show_name = request.json['name']
+    except:
+        return create_response(status=422, message="The show name is missing! Add a value for 'name' in the request body.")
+    try:
+        show_episodes = request.json['episodes_seen']
+    except:
+        return create_response(status=422, message="The episodes seen is missing! Add a value for 'episodes_seen' in the request body.")
 
     if(show_name == None or show_name == ""):
         return create_response(status=422, message="The show name cannot be empty!")
@@ -105,9 +110,8 @@ def add_show():
 
     this_show = {'name':show_name, 'episodes_seen': show_episodes}
     db.create('shows', this_show)
-
     id = db.getLastId('shows')
-    return create_response({"show": db.getById('shows', int(id))})
+    return create_response(status=201, data={"show": db.getById('shows', int(id))}, message="Added a new show!")
 
 
 
@@ -119,12 +123,16 @@ def update_show(id):
 
     if db.getById('shows', int(id)) is None:
         return create_response(status=404, message="No show with this id exists")
-
-    print(request.json)
-    show_name = request.json['name']
-    show_episodes = request.json['episodes_seen']
     this_show = db.getById('shows', int(id))
 
+    try:
+        show_name = request.json['name']
+    except:
+        show_name = this_show.get('name')
+    try:
+        show_episodes = request.json['episodes_seen']
+    except:
+        show_episodes = this_show.get('episodes_seen')
     if(show_name == None or show_name == ""):
         show_name = this_show.get('name')
     if(show_episodes == None or show_episodes == ""):
@@ -132,8 +140,7 @@ def update_show(id):
 
     update_values = {'name':show_name, 'episodes_seen': show_episodes}
     db.updateById('shows', int(id), update_values)
-
-    return create_response({"show": db.getById('shows', int(id))})
+    return create_response(data={"show": db.getById('shows', int(id))}, status=201, message="Updated show with id " + id)
 
 
 
