@@ -1,9 +1,9 @@
 <template>
   <!-- PART 4: Add your code here -->
   <div id="show_details">
-    <p>
-      Show name: {{name}}    <Counter v-bind:count="episodes_seen"/>
-    </p>
+    
+      Show name: {{name}}    
+      <Counter v-bind:count="episodes_seen"/>
 
   </div>
 </template>
@@ -17,9 +17,11 @@
     components: {
       Counter
     },
-    props: {'id':"",
+    props: {
+      'id':"",
       'name':"",
-      'episodes_seen':0 },
+      'episodes_seen':0
+    },
   };
 </script>
 

@@ -3,8 +3,7 @@
   <div>
 
 <!--    <p>I'm a Counter!</p>     -->
-<!--    <p>The current value of count is: {{ count }} </p>    -->
-    <p>Episodes seen: {{ count }} </p>
+    <p>Current count (Episodes seen) : {{ count }} </p>
 
     <div id="button-1">
       <button v-on:click="count += 1">Increment</button>

@@ -15,7 +15,7 @@
 
     <div id="add_show">
       <p> Add a Show </p>
-      <input v-model="showName" placeholder="new show name">
+      <input v-model="showName" placeholder="New show name">
       <button v-on:click="addShow">Add new show</button>
     </div>
 
